@@ -14,23 +14,49 @@ namespace TestData.Profiles.Tests
             "Smith", "Jones", "Williams", "Brown", "Wilson", "Taylor"
         };
 
-        [Fact]
-        public void CanCreateUsers()
+        public DataConfigurationTests()
         {
-            DataConfiguration dataConfiguration = new DataConfiguration();
-            dataConfiguration.CreateProfileFor<User>(() => new User())
+            _dataConfiguration = new DataConfiguration();
+            _dataConfiguration.CreateProfileFor<Role>(() => new Role())
+                .ForMember(x => x.Id).ValueFrom(f => f.ValueFromExpression((u) => Guid.NewGuid()))
+                .ForMember(x => x.Name).ValueFrom(f => f.ValueFromRandomString(4, 8));
+
+            _dataConfiguration.CreateProfileFor<User>(() => new User())
+                .FollowPath(x => x.Role)
                 .ForMember(x => x.Id).ValueFrom(f => f.ValueFromExpression((u) => Guid.NewGuid()))
                 .ForMember(x => x.FirstName).ValueFrom(f => f.ValueFromRandomString(4, 8))
                 .ForMember(x => x.Surname).ValueFrom(f => f.ValueFromCollection(_names))
                 .ForMember(x => x.LogonCount).ValueFrom(f => f.ValueFromRandom(0, 5));
+        }
 
-            var users = dataConfiguration.Get<User>().Generate(5);
+        private readonly DataConfiguration _dataConfiguration;
 
+        [Fact]
+        public void CanCreate50000Users()
+        {
+            var users = _dataConfiguration.Get<User>().Generate(50000);
+            
+            users.Count();
+        }
+
+        [Fact]
+        public void CanCreateUsers()
+        {
+            var users = _dataConfiguration.Get<User>().Generate(500);
+            
             Assert.NotNull(users);
             Assert.NotEmpty(users);
-            Assert.Equal(5, users.Count());
-            Assert.Contains(users.First().Surname, _names);
+            Assert.Equal(500, users.Count());
+            var first = users.First();
+            Assert.Contains(first.Surname, _names);
             Assert.NotEqual(Guid.Empty, users.First().Id);
+            Assert.NotNull(first.Role);
+        }
+
+        [Fact]
+        public void CanCreateArrayOfRolesAndUseForMember()
+        {
+            
         }
     }
 }

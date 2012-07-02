@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,6 +11,25 @@ namespace TestData.Profiles
     public interface IValueCreator
     {
         object CreateValue(object instance);
+    }
+
+    public class PathValueCreator : IValueCreator
+    {
+        private readonly PropertyInfo _propertyInfo;
+        private DataConfiguration _dataConfiguration;
+        
+        public PathValueCreator(PropertyInfo propertyInfo, DataConfiguration dataConfiguration)
+        {
+            _propertyInfo = propertyInfo;
+            _dataConfiguration = dataConfiguration;
+        }
+
+        public object CreateValue(object instance)
+        {
+            var dataProfile = _dataConfiguration.Get(_propertyInfo.PropertyType);
+            var reference = dataProfile.Generate();
+            return reference;
+        }
     }
 
     public class DecimalRandomValueCreator : RandomValueCreator<decimal>

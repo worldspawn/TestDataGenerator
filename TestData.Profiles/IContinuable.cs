@@ -11,5 +11,6 @@ namespace TestData.Profiles
     {
         IIncompleteMemberData<TType, TProperty> ForMember<TProperty>(Expression<Func<TType, TProperty>> member);
         IEnumerable<TType> Generate(int count);
+        TType Generate();
     }
 }

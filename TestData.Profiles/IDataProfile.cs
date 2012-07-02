@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -11,59 +12,90 @@ namespace TestData.Profiles
     public interface IDataProfile
     {
         Type Type { get; }
+        object Generate();
+        IEnumerable Generate(int count);
     }
 
     public interface IDataProfile<TType> : IDataProfile, IContinuable<TType> where TType : class
     {
-        IDataProfile<TType> FollowPath<TProperty>(Func<TType, TProperty> path);
-        IDataProfile<TType> FollowPath<TProperty>(Func<TType, TProperty> path, int exactly) where TProperty : System.Collections.IEnumerable;
-        IDataProfile<TType> FollowPath<TProperty>(Func<TType, TProperty> path, int from, int to) where TProperty : System.Collections.IEnumerable;
-
+        new TType Generate();
+        new IEnumerable<TType> Generate(int count);
+        IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path);
+        IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path, int exactly) where TProperty : System.Collections.IEnumerable;
+        IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path, int from, int to) where TProperty : System.Collections.IEnumerable;
     }
 
     public abstract class DataProfile : IDataProfile
     {
-        protected DataProfile(Type type)
+        protected DataProfile(Type type, Func<object> constructor)
         {
             _type = type;
+            _memberData = new Dictionary<PropertyInfo, ICompleteMemberData>();
+            _constructor = constructor;
         }
 
+        internal readonly Func<object> _constructor;
         private readonly Type _type;
+        internal readonly IDictionary<PropertyInfo, ICompleteMemberData> _memberData;
 
         public Type Type
         {
             get { return _type; }
         }
-    }
-
-    public class DataProfile<TType> : DataProfile, IDataProfile<TType> where TType : class
-    {
-        public DataProfile(Func<TType> constructor)
-            : base(typeof(TType))
-        {
-            _constructor = constructor;
-            _memberData = new Dictionary<PropertyInfo, ICompleteMemberData>();
-        }
-
-        private readonly Func<TType> _constructor;
-        private readonly IDictionary<PropertyInfo, ICompleteMemberData> _memberData;
 
         internal IDictionary<PropertyInfo, ICompleteMemberData> MemberData
         {
             get { return _memberData; }
         }
 
-        public IDataProfile<TType> FollowPath<TProperty>(Func<TType, TProperty> path)
+        object IDataProfile.Generate()
+        {
+            var enumerator = Generate(this, 1).GetEnumerator();
+            if (enumerator.MoveNext())
+                return enumerator.Current;
+
+            throw new InvalidOperationException("no result");
+        }
+
+        IEnumerable IDataProfile.Generate(int count)
+        {
+            return Generate(this, count);
+        }
+
+        public static IEnumerable Generate(DataProfile dataProfile, int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                var item = dataProfile._constructor();
+                foreach (var pair in dataProfile._memberData)
+                    pair.Key.SetValue(item, pair.Value.GetValue(item));
+                yield return item;
+            }
+        }
+    }
+
+    public class DataProfile<TType> : DataProfile, IDataProfile<TType> where TType : class
+    {
+        public DataProfile(Func<object> constructor, DataConfiguration dataConfiguration)
+            : base(typeof(TType), constructor)
+        {
+            _dataConfiguration = dataConfiguration;
+        }
+
+        private readonly DataConfiguration _dataConfiguration;
+
+        public IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path)
+        {
+            CreateMemberData<TType, TProperty>(path, this).ValueFrom(new PathValueCreator(GetFromExpression(path), _dataConfiguration));
+            return this;
+        }
+
+        public IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path, int exactly) where TProperty : System.Collections.IEnumerable
         {
             throw new NotImplementedException();
         }
 
-        public IDataProfile<TType> FollowPath<TProperty>(Func<TType, TProperty> path, int exactly) where TProperty : System.Collections.IEnumerable
-        {
-            throw new NotImplementedException();
-        }
-
-        public IDataProfile<TType> FollowPath<TProperty>(Func<TType, TProperty> path, int from, int to) where TProperty : System.Collections.IEnumerable
+        public IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path, int from, int to) where TProperty : System.Collections.IEnumerable
         {
             throw new NotImplementedException();
         }
@@ -78,17 +110,22 @@ namespace TestData.Profiles
             return Generate(this, count);
         }
 
-        public static IEnumerable<TDataType> Generate<TDataType>(DataProfile<TDataType> dataProfile, int count) where TDataType : class
+        public TType Generate()
         {
-            for (int i = 0; i < count; i++){
-                var item = dataProfile._constructor();
-                foreach (var pair in dataProfile._memberData)
-                    pair.Key.SetValue(item, pair.Value.GetValue(item));
-                yield return item;
-            }
+            return Generate(this);
         }
 
-        public static IIncompleteMemberData<TDataType, TProperty> CreateMemberData<TDataType, TProperty>(Expression<Func<TDataType, TProperty>> expression, DataProfile<TDataType> dataProfile) where TDataType : class
+        public static TDataType Generate<TDataType>(DataProfile<TDataType> dataProfile) where TDataType : class
+        {
+            return Generate<TDataType>(dataProfile, 1).First();
+        }
+
+        public static IEnumerable<TDataType> Generate<TDataType>(DataProfile<TDataType> dataProfile, int count) where TDataType : class
+        {
+            return DataProfile.Generate(dataProfile, count).OfType<TDataType>();
+        }
+
+        public static PropertyInfo GetFromExpression<TDataType, TProperty>(Expression<Func<TDataType, TProperty>> expression)
         {
             MemberExpression memberExpression = expression.Body as MemberExpression;
             if (memberExpression == null)
@@ -100,7 +137,12 @@ namespace TestData.Profiles
             if (memberExpression == null || (memberExpression.Member as PropertyInfo) == null)
                 throw new ArgumentException(string.Format("The Expression {0} is not a member expression for a property", expression));
 
-            var memberData = new IncompleteMemberData<TDataType, TProperty>((PropertyInfo)memberExpression.Member, dataProfile);            
+            return (PropertyInfo)memberExpression.Member;
+        }
+
+        public static IIncompleteMemberData<TDataType, TProperty> CreateMemberData<TDataType, TProperty>(Expression<Func<TDataType, TProperty>> expression, DataProfile<TDataType> dataProfile) where TDataType : class
+        {
+            var memberData = new IncompleteMemberData<TDataType, TProperty>(GetFromExpression(expression), dataProfile);            
             
             return memberData;
         }

@@ -74,6 +74,11 @@ namespace TestData.Profiles
             return DataProfile<TType>.Generate((DataProfile<TType>)DataProfile, count);
         }
 
+        public TType Generate()
+        {
+            return DataProfile<TType>.Generate((DataProfile<TType>)DataProfile);
+        }
+
         public object GetValue(object instance)
         {
             if (instance as TType == null)
