@@ -12,7 +12,36 @@ namespace TestData.Profiles
         object CreateValue(object instance);
     }
 
-    public class RandomValueCreator<TProperty> : IValueCreator
+    public class DecimalRandomValueCreator : RandomValueCreator<decimal>
+    {
+        public DecimalRandomValueCreator(decimal start, decimal end) : base(start, end) { }
+
+        [ThreadStatic]
+        private static Random _rand = new Random();
+
+        public override object CreateValue(object instance)
+        {
+            var start = Convert.ToDouble(_start);
+            var end = Convert.ToDouble(_end);
+
+            return Convert.ToDecimal(start + _rand.NextDouble() * (end - start));
+        }
+    }
+
+    public class IntRandomValueCreator : RandomValueCreator<int>
+    {
+        public IntRandomValueCreator(int start, int end) : base(start, end) { }
+
+        [ThreadStatic]
+        private static Random _rand = new Random();
+
+        public override object CreateValue(object instance)
+        {
+            return _rand.Next(_start, _end);
+        }
+    }
+
+    public abstract class RandomValueCreator<TProperty> : IValueCreator
     {
         public RandomValueCreator(TProperty start, TProperty end)
         {
@@ -20,12 +49,9 @@ namespace TestData.Profiles
             _end = end;
         }
 
-        private TProperty _start, _end;
+        protected TProperty _start, _end;
 
-        public object CreateValue(object instance)
-        {
-            return default(TProperty);
-        }
+        public abstract object CreateValue(object instance);
     }
 
     public class CollectionItemValueCreator<TProperty> : IValueCreator

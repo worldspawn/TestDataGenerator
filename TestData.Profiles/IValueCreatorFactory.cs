@@ -10,7 +10,8 @@ namespace TestData.Profiles
     {
         IValueCreator ValueFromExpression(Func<TType, TProperty> expression);
         IValueCreator ValueFromConstant(TProperty constant);
-        IValueCreator ValueFromRandom(TProperty start, TProperty end);
+        IValueCreator ValueFromRandom(int start, int end);
+        IValueCreator ValueFromRandom(decimal start, decimal end);
         IValueCreator ValueFromCollection(IList<TProperty> collection);
         IValueCreator ValueFromRandomString(int length);
         IValueCreator ValueFromRandomString(int start, int end);
@@ -28,9 +29,14 @@ namespace TestData.Profiles
             throw new NotImplementedException();
         }
 
-        public IValueCreator ValueFromRandom(TProperty start, TProperty end)
+        public IValueCreator ValueFromRandom(int start, int end)
         {
-            return new RandomValueCreator<TProperty>(start, end);
+            return new IntRandomValueCreator(start, end);
+        }
+
+        public IValueCreator ValueFromRandom(decimal start, decimal end)
+        {
+            return new DecimalRandomValueCreator(start, end);
         }
 
         public IValueCreator ValueFromCollection(IList<TProperty> collection)
