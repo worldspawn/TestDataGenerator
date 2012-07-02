@@ -39,7 +39,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IContinuable.cs" />
     <Compile Include="DataConfiguration.cs" />
     <Compile Include="IDataProfile.cs" />
     <Compile Include="IMemberData.cs" />

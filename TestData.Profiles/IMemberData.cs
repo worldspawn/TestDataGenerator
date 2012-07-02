@@ -13,7 +13,7 @@ namespace TestData.Profiles
         PropertyInfo PropertyInfo { get; }
     }
 
-    public interface ICompleteMemberData<TType, TProperty> : ICompleteMemberData, IContinuable<TType>
+    public interface ICompleteMemberData<TType, TProperty> : ICompleteMemberData
     {
         //TProperty GetValue(TType data);
     }
@@ -52,27 +52,6 @@ namespace TestData.Profiles
         }
 
         private readonly IValueCreator _valueCreator;
-
-
-        public ICompleteMemberData<TType, TNextProperty> ForMember<TNextProperty>(Expression<Func<TType, TNextProperty>> member, Func<IValueCreatorFactory<TType, TNextProperty>, IValueCreator> valueCreator)
-        {
-            return DataProfile<TType>.CreateMemberData<TType, TNextProperty>(member, valueCreator, (DataProfile<TType>)DataProfile);
-        }
-
-        public ICompleteMemberData<TType, TNextProperty> ForMember<TNextProperty>(Expression<Func<TType, TNextProperty>> member, IValueCreator valueCreator)
-        {
-            return DataProfile<TType>.CreateMemberData<TType, TNextProperty>(member, valueCreator, (DataProfile<TType>)DataProfile);
-        }
-
-        public IEnumerable<TType> Generate(int count)
-        {
-            return DataProfile<TType>.Generate((DataProfile<TType>)DataProfile, count);
-        }
-
-        public TType Generate()
-        {
-            return DataProfile<TType>.Generate((DataProfile<TType>)DataProfile);
-        }
 
         public object GetValue(object instance)
         {

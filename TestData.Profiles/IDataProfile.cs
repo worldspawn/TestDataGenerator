@@ -16,13 +16,15 @@ namespace TestData.Profiles
         IEnumerable Generate(int count);
     }
 
-    public interface IDataProfile<TType> : IDataProfile, IContinuable<TType> where TType : class
+    public interface IDataProfile<TType> : IDataProfile where TType : class
     {
         new TType Generate();
         new IEnumerable<TType> Generate(int count);
         IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path);
         IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path, int exactly) where TProperty : System.Collections.IEnumerable;
         IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path, int from, int to) where TProperty : System.Collections.IEnumerable;
+        IDataProfile<TType> ForMember<TProperty>(Expression<Func<TType, TProperty>> member, Func<IValueCreatorFactory<TType, TProperty>, IValueCreator> valueCreator);
+        IDataProfile<TType> ForMember<TProperty>(Expression<Func<TType, TProperty>> member, IValueCreator valueCreator);
     }
 
     public abstract class DataProfile : IDataProfile
@@ -99,15 +101,19 @@ namespace TestData.Profiles
         {
             throw new NotImplementedException();
         }
-        
-        public ICompleteMemberData<TType, TProperty> ForMember<TProperty>(Expression<Func<TType, TProperty>> member, Func<IValueCreatorFactory<TType, TProperty>, IValueCreator> valueCreator)
+
+        public IDataProfile<TType> ForMember<TProperty>(Expression<Func<TType, TProperty>> member, Func<IValueCreatorFactory<TType, TProperty>, IValueCreator> valueCreator)
         {
-            return CreateMemberData(member, valueCreator, this);
+            var memberData = CreateMemberData(member, valueCreator, this);
+            _memberData.Add(memberData.PropertyInfo, memberData);
+            return this;
         }
 
-        public ICompleteMemberData<TType, TProperty> ForMember<TProperty>(Expression<Func<TType, TProperty>> member, IValueCreator valueCreator)
+        public IDataProfile<TType> ForMember<TProperty>(Expression<Func<TType, TProperty>> member, IValueCreator valueCreator)
         {
-            return CreateMemberData(member, valueCreator, this);
+            var memberData = CreateMemberData(member, valueCreator, this);
+            _memberData.Add(memberData.PropertyInfo, memberData);
+            return this;
         }
 
         public IEnumerable<TType> Generate(int count)
@@ -140,7 +146,7 @@ namespace TestData.Profiles
             }
 
             if (memberExpression == null || (memberExpression.Member as PropertyInfo) == null)
-                throw new ArgumentException(string.Format("The Expression {0} is not a member expression for a property", expression));
+                throw new ArgumentException(string.Format("The expression {0} is not a member expression for a property", expression));
 
             return (PropertyInfo)memberExpression.Member;
         }
