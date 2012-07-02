@@ -15,18 +15,12 @@ namespace TestData.Profiles
 
     public interface ICompleteMemberData<TType, TProperty> : ICompleteMemberData, IContinuable<TType>
     {
-        TProperty GetValue(TType data);
+        //TProperty GetValue(TType data);
     }
 
     public interface ICompleteMemberData : IMemberData
     {
         object GetValue(object instance);
-    }
-
-    public interface IIncompleteMemberData<TType, TProperty> : IMemberData
-    {
-        ICompleteMemberData<TType, TProperty> ValueFrom(IValueCreator valueCreator);
-        ICompleteMemberData<TType, TProperty> ValueFrom(Func<IValueCreatorFactory<TType, TProperty>, IValueCreator> valueCreator);
     }
 
     public abstract class MemberData : IMemberData
@@ -59,14 +53,15 @@ namespace TestData.Profiles
 
         private readonly IValueCreator _valueCreator;
 
-        public TProperty GetValue(TType data)
+
+        public ICompleteMemberData<TType, TNextProperty> ForMember<TNextProperty>(Expression<Func<TType, TNextProperty>> member, Func<IValueCreatorFactory<TType, TNextProperty>, IValueCreator> valueCreator)
         {
-            throw new NotImplementedException();
+            return DataProfile<TType>.CreateMemberData<TType, TNextProperty>(member, valueCreator, (DataProfile<TType>)DataProfile);
         }
 
-        public IIncompleteMemberData<TType, TNextProperty> ForMember<TNextProperty>(Expression<Func<TType, TNextProperty>> member)
+        public ICompleteMemberData<TType, TNextProperty> ForMember<TNextProperty>(Expression<Func<TType, TNextProperty>> member, IValueCreator valueCreator)
         {
-            return DataProfile<TType>.CreateMemberData<TType, TNextProperty>(member, (DataProfile<TType>)DataProfile);
+            return DataProfile<TType>.CreateMemberData<TType, TNextProperty>(member, valueCreator, (DataProfile<TType>)DataProfile);
         }
 
         public IEnumerable<TType> Generate(int count)
@@ -85,27 +80,6 @@ namespace TestData.Profiles
                 throw new ArgumentException("instance not of correct type", "instance");
 
             return _valueCreator.CreateValue(instance); 
-        }
-    }
-
-    public class IncompleteMemberData<TType, TProperty> : MemberData, IIncompleteMemberData<TType, TProperty> where TType : class
-    {
-        public IncompleteMemberData(PropertyInfo propertyInfo, IDataProfile dataProfile)
-            : base(propertyInfo, dataProfile)
-        {
-            _valueCreatorFactory = new ValueCreatorFactory<TType, TProperty>();
-        }
-
-        IValueCreatorFactory<TType, TProperty> _valueCreatorFactory;
-
-        public ICompleteMemberData<TType, TProperty> ValueFrom(IValueCreator valueCreator)
-        {
-            return new CompleteMemberData<TType, TProperty>(PropertyInfo, valueCreator, (DataProfile<TType>)DataProfile);
-        }
-
-        public ICompleteMemberData<TType, TProperty> ValueFrom(Func<IValueCreatorFactory<TType, TProperty>, IValueCreator> valueCreator)
-        {
-            return ValueFrom(valueCreator(_valueCreatorFactory));
         }
     }
 }

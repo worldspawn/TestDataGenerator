@@ -18,15 +18,15 @@ namespace TestData.Profiles.Tests
         {
             _dataConfiguration = new DataConfiguration();
             _dataConfiguration.CreateProfileFor<Role>(() => new Role())
-                .ForMember(x => x.Id).ValueFrom(f => f.ValueFromExpression((u) => Guid.NewGuid()))
-                .ForMember(x => x.Name).ValueFrom(f => f.ValueFromRandomString(4, 8));
+                .ForMember(x => x.Id, f => f.ValueFromExpression((u) => Guid.NewGuid()))
+                .ForMember(x => x.Name, f => f.ValueFromRandomString(4, 8));
 
             _dataConfiguration.CreateProfileFor<User>(() => new User())
                 .FollowPath(x => x.Role)
-                .ForMember(x => x.Id).ValueFrom(f => f.ValueFromExpression((u) => Guid.NewGuid()))
-                .ForMember(x => x.FirstName).ValueFrom(f => f.ValueFromRandomString(4, 8))
-                .ForMember(x => x.Surname).ValueFrom(f => f.ValueFromCollection(_names))
-                .ForMember(x => x.LogonCount).ValueFrom(f => f.ValueFromRandom(0, 5));
+                .ForMember(x => x.Id, f => f.ValueFromExpression((u) => Guid.NewGuid()))
+                .ForMember(x => x.FirstName, f => f.ValueFromRandomString(4, 8))
+                .ForMember(x => x.Surname, f => f.ValueFromCollection(_names))
+                .ForMember(x => x.LogonCount, f => f.ValueFromRandom(0, 5));
         }
 
         private readonly DataConfiguration _dataConfiguration;

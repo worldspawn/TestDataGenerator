@@ -1,2 +1,4 @@
 code is a bit messy atm, needs cleaning up in the area of generating. dependencies are all over the place
 want to support cloning of data profiles so you can pre configure a known set of them and reuse them, or clone and mod them for a particular tests
+
+examples are in the tests

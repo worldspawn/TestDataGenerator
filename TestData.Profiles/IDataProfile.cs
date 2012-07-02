@@ -86,7 +86,7 @@ namespace TestData.Profiles
 
         public IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path)
         {
-            CreateMemberData<TType, TProperty>(path, this).ValueFrom(new PathValueCreator(GetFromExpression(path), _dataConfiguration));
+            CreateMemberData<TType, TProperty>(path, new PathValueCreator(GetFromExpression(path), _dataConfiguration), this);
             return this;
         }
 
@@ -99,10 +99,15 @@ namespace TestData.Profiles
         {
             throw new NotImplementedException();
         }
-
-        public IIncompleteMemberData<TType, TProperty> ForMember<TProperty>(Expression<Func<TType, TProperty>> member)
+        
+        public ICompleteMemberData<TType, TProperty> ForMember<TProperty>(Expression<Func<TType, TProperty>> member, Func<IValueCreatorFactory<TType, TProperty>, IValueCreator> valueCreator)
         {
-            return CreateMemberData<TType, TProperty>(member, this);
+            return CreateMemberData(member, valueCreator, this);
+        }
+
+        public ICompleteMemberData<TType, TProperty> ForMember<TProperty>(Expression<Func<TType, TProperty>> member, IValueCreator valueCreator)
+        {
+            return CreateMemberData(member, valueCreator, this);
         }
 
         public IEnumerable<TType> Generate(int count)
@@ -140,10 +145,15 @@ namespace TestData.Profiles
             return (PropertyInfo)memberExpression.Member;
         }
 
-        public static IIncompleteMemberData<TDataType, TProperty> CreateMemberData<TDataType, TProperty>(Expression<Func<TDataType, TProperty>> expression, DataProfile<TDataType> dataProfile) where TDataType : class
+        public static ICompleteMemberData<TDataType, TProperty> CreateMemberData<TDataType, TProperty>(Expression<Func<TDataType, TProperty>> expression, Func<IValueCreatorFactory<TType, TProperty>, IValueCreator> valueCreator, DataProfile<TDataType> dataProfile) where TDataType : class
         {
-            var memberData = new IncompleteMemberData<TDataType, TProperty>(GetFromExpression(expression), dataProfile);            
-            
+            IValueCreatorFactory<TType, TProperty> valueCreatorFactory = new ValueCreatorFactory<TType, TProperty>();
+            return CreateMemberData(expression, valueCreator(valueCreatorFactory), dataProfile);
+        }
+
+        public static ICompleteMemberData<TDataType, TProperty> CreateMemberData<TDataType, TProperty>(Expression<Func<TDataType, TProperty>> expression, IValueCreator valueCreator, DataProfile<TDataType> dataProfile) where TDataType : class
+        {
+            var memberData = new CompleteMemberData<TDataType, TProperty>(GetFromExpression(expression), valueCreator, dataProfile);            
             return memberData;
         }
     }

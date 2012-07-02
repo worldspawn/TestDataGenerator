@@ -9,7 +9,8 @@ namespace TestData.Profiles
 {
     public interface IContinuable<TType>
     {
-        IIncompleteMemberData<TType, TProperty> ForMember<TProperty>(Expression<Func<TType, TProperty>> member);
+        ICompleteMemberData<TType, TProperty> ForMember<TProperty>(Expression<Func<TType, TProperty>> member, IValueCreator valueCreator);
+        ICompleteMemberData<TType, TProperty> ForMember<TProperty>(Expression<Func<TType, TProperty>> member, Func<IValueCreatorFactory<TType, TProperty>, IValueCreator> valueCreator);
         IEnumerable<TType> Generate(int count);
         TType Generate();
     }
