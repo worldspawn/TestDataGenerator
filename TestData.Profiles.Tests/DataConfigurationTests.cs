@@ -17,11 +17,11 @@ namespace TestData.Profiles.Tests
         public DataConfigurationTests()
         {
             _dataConfiguration = new DataConfiguration();
-            _dataConfiguration.CreateProfileFor<Role>(() => new Role())
+            _dataConfiguration.CreateProfileFor(() => new Role())
                 .ForMember(x => x.Id, f => f.ValueFromExpression((u) => Guid.NewGuid()))
                 .ForMember(x => x.Name, f => f.ValueFromRandomString(4, 8));
 
-            _dataConfiguration.CreateProfileFor<User>(() => new User())
+            _dataConfiguration.CreateProfileFor(() => new User())
                 .FollowPath(x => x.Role)
                 .ForMember(x => x.Id, f => f.ValueFromExpression((u) => Guid.NewGuid()))
                 .ForMember(x => x.FirstName, f => f.ValueFromRandomString(4, 8))

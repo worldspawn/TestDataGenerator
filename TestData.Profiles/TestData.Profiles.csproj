@@ -39,11 +39,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ValueCreatorFactory.cs" />
+    <Compile Include="ValueCreators\CollectionItemValueCreator.cs" />
+    <Compile Include="CompleteMemberData.cs" />
     <Compile Include="DataConfiguration.cs" />
+    <Compile Include="DataProfile.cs" />
+    <Compile Include="ValueCreators\DecimalRandomValueCreator.cs" />
+    <Compile Include="ValueCreators\ExpressionValueCreator.cs" />
+    <Compile Include="ICompleteMemberData.cs" />
     <Compile Include="IDataProfile.cs" />
     <Compile Include="IMemberData.cs" />
+    <Compile Include="ValueCreators\IntRandomValueCreator.cs" />
     <Compile Include="IValueCreator.cs" />
     <Compile Include="IValueCreatorFactory.cs" />
+    <Compile Include="MemberData.cs" />
+    <Compile Include="ValueCreators\RandomStringValueCreator.cs" />
+    <Compile Include="ValueCreators\RandomValueCreator.cs" />
+    <Compile Include="ValueCreators\PathValueCreator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
