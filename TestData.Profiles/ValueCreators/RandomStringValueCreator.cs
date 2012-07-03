@@ -21,7 +21,7 @@ namespace TestData.Profiles.ValueCreators
         private static Random _rand = new Random();
         private const string _chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-        public object CreateValue(object instance)
+        public object CreateValue(object instance, DataConfiguration dataConfiguration)
         {
             var sb = new StringBuilder();
             int length = _length;

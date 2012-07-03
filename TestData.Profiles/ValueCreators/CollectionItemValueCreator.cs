@@ -6,7 +6,7 @@ namespace TestData.Profiles.ValueCreators
 {
     public class CollectionItemValueCreator<TProperty> : IValueCreator
     {
-        public CollectionItemValueCreator(IList<TProperty> collection)
+        public CollectionItemValueCreator(IEnumerable<TProperty> collection)
         {
             _collection = collection.ToArray();
         }
@@ -15,7 +15,7 @@ namespace TestData.Profiles.ValueCreators
         private static Random _rand = new Random();
         private readonly TProperty[] _collection;
 
-        public object CreateValue(object instance)
+        public object CreateValue(object instance, DataConfiguration dataConfiguration)
         {
             if (_collection.Length == 0)
                 throw new InvalidOperationException("collection is empty");

@@ -9,7 +9,7 @@ namespace TestData.Profiles.ValueCreators
         [ThreadStatic]
         private static Random _rand = new Random();
 
-        public override object CreateValue(object instance)
+        public override object CreateValue(object instance, DataConfiguration dataConfiguration)
         {
             var start = Convert.ToDouble(_start);
             var end = Convert.ToDouble(_end);

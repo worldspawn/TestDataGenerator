@@ -5,6 +5,6 @@ namespace TestData.Profiles
 {
     public interface IValueCreator
     {
-        object CreateValue(object instance);
+        object CreateValue(object instance, DataConfiguration dataConfiguration);
     }
 }

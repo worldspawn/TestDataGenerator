@@ -5,17 +5,15 @@ namespace TestData.Profiles.ValueCreators
     public class PathValueCreator : IValueCreator
     {
         private readonly PropertyInfo _propertyInfo;
-        private DataConfiguration _dataConfiguration;
         
-        public PathValueCreator(PropertyInfo propertyInfo, DataConfiguration dataConfiguration)
+        public PathValueCreator(PropertyInfo propertyInfo)
         {
             _propertyInfo = propertyInfo;
-            _dataConfiguration = dataConfiguration;
         }
 
-        public object CreateValue(object instance)
+        public object CreateValue(object instance, DataConfiguration dataConfiguration)
         {
-            var dataProfile = _dataConfiguration.Get(_propertyInfo.PropertyType);
+            var dataProfile = dataConfiguration.Get(_propertyInfo.PropertyType);
             var reference = dataProfile.Generate();
             return reference;
         }

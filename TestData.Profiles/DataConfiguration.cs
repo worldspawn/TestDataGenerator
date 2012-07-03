@@ -8,11 +8,11 @@ namespace TestData.Profiles
 {
     public class DataConfiguration
     {
-        private IDictionary<Type, IDataProfile> _profiles = new Dictionary<Type, IDataProfile>();
+        private readonly IDictionary<Type, IDataProfile> _profiles = new Dictionary<Type, IDataProfile>();
 
         public IDataProfile Get(Type type)
         {
-            return (IDataProfile)_profiles[type];
+            return _profiles[type];
         }
 
         public IDataProfile<TType> Get<TType>() where TType : class
@@ -26,6 +26,11 @@ namespace TestData.Profiles
             _profiles.Add(typeof(TType), profile);
 
             return profile;
+        }
+
+        public void Add<TType>(DataProfile<TType> dataProfile) where TType : class
+        {
+            _profiles[typeof(TType)] = dataProfile;
         }
     }
 }

@@ -11,16 +11,13 @@ namespace TestData.Profiles
     public class DataProfile<TType> : DataProfile, IDataProfile<TType> where TType : class
     {
         public DataProfile(Func<object> constructor, DataConfiguration dataConfiguration)
-            : base(typeof(TType), constructor)
+            : base(typeof(TType), constructor, dataConfiguration)
         {
-            _dataConfiguration = dataConfiguration;
         }
-
-        private readonly DataConfiguration _dataConfiguration;
 
         public IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path)
         {
-            var memberData = CreateMemberData<TType, TProperty>(path, new PathValueCreator(GetFromExpression(path), _dataConfiguration), this);
+            var memberData = CreateMemberData<TType, TProperty>(path, new PathValueCreator(GetFromExpression(path)), this);
             _memberData[memberData.PropertyInfo] = memberData;
             return this;
         }
@@ -42,6 +39,12 @@ namespace TestData.Profiles
             return this;
         }
 
+        public IDataProfile<TType> ForMember(PropertyInfo propertyInfo, IValueCreator valueCreator)
+        {
+            _memberData[propertyInfo] = new CompleteMemberData<TType>(propertyInfo, valueCreator, this);
+            return this;
+        }
+
         public IDataProfile<TType> ForMember<TProperty>(Expression<Func<TType, TProperty>> member, IValueCreator valueCreator)
         {
             var memberData = CreateMemberData(member, valueCreator, this);
@@ -59,6 +62,17 @@ namespace TestData.Profiles
             return Generate(this);
         }
 
+        public IDataProfile<TType> CloneInto(DataConfiguration dataConfiguration)
+        {
+            var dataProfile = new DataProfile<TType>(_constructor, dataConfiguration);
+            foreach (var md in _memberData)
+                dataProfile.ForMember(md.Key, md.Value.ValueCreator);
+
+            dataConfiguration.Add(dataProfile);
+
+            return dataProfile;
+        }
+
         public static TDataType Generate<TDataType>(DataProfile<TDataType> dataProfile) where TDataType : class
         {
             return Generate<TDataType>(dataProfile, 1).First();
@@ -71,10 +85,10 @@ namespace TestData.Profiles
 
         public static PropertyInfo GetFromExpression<TDataType, TProperty>(Expression<Func<TDataType, TProperty>> expression)
         {
-            MemberExpression memberExpression = expression.Body as MemberExpression;
+            var memberExpression = expression.Body as MemberExpression;
             if (memberExpression == null)
             {
-                UnaryExpression ubody = (UnaryExpression)expression.Body;
+                var ubody = (UnaryExpression)expression.Body;
                 memberExpression = ubody.Operand as MemberExpression;
             }
 
@@ -84,28 +98,30 @@ namespace TestData.Profiles
             return (PropertyInfo)memberExpression.Member;
         }
 
-        public static ICompleteMemberData<TDataType, TProperty> CreateMemberData<TDataType, TProperty>(Expression<Func<TDataType, TProperty>> expression, Func<IValueCreatorFactory<TType, TProperty>, IValueCreator> valueCreator, DataProfile<TDataType> dataProfile) where TDataType : class
+        public static ICompleteMemberData CreateMemberData<TDataType, TProperty>(Expression<Func<TDataType, TProperty>> expression, Func<IValueCreatorFactory<TType, TProperty>, IValueCreator> valueCreator, DataProfile<TDataType> dataProfile) where TDataType : class
         {
             IValueCreatorFactory<TType, TProperty> valueCreatorFactory = new ValueCreatorFactory<TType, TProperty>();
             return CreateMemberData(expression, valueCreator(valueCreatorFactory), dataProfile);
         }
 
-        public static ICompleteMemberData<TDataType, TProperty> CreateMemberData<TDataType, TProperty>(Expression<Func<TDataType, TProperty>> expression, IValueCreator valueCreator, DataProfile<TDataType> dataProfile) where TDataType : class
+        public static ICompleteMemberData CreateMemberData<TDataType, TProperty>(Expression<Func<TDataType, TProperty>> expression, IValueCreator valueCreator, DataProfile<TDataType> dataProfile) where TDataType : class
         {
-            var memberData = new CompleteMemberData<TDataType, TProperty>(GetFromExpression(expression), valueCreator, dataProfile);            
+            var memberData = new CompleteMemberData<TDataType>(GetFromExpression(expression), valueCreator, dataProfile);
             return memberData;
         }
     }
 
     public abstract class DataProfile : IDataProfile
     {
-        protected DataProfile(Type type, Func<object> constructor)
+        protected DataProfile(Type type, Func<object> constructor, DataConfiguration dataConfiguration)
         {
             _type = type;
             _memberData = new Dictionary<PropertyInfo, ICompleteMemberData>();
             _constructor = constructor;
+            _dataConfiguration = dataConfiguration;
         }
 
+        private readonly DataConfiguration _dataConfiguration;
         internal readonly Func<object> _constructor;
         private readonly Type _type;
         internal readonly IDictionary<PropertyInfo, ICompleteMemberData> _memberData;
@@ -118,6 +134,11 @@ namespace TestData.Profiles
         internal IDictionary<PropertyInfo, ICompleteMemberData> MemberData
         {
             get { return _memberData; }
+        }
+
+        public DataConfiguration DataConfiguration
+        {
+            get { return _dataConfiguration; }
         }
 
         object IDataProfile.Generate()
@@ -140,7 +161,7 @@ namespace TestData.Profiles
             {
                 var item = dataProfile._constructor();
                 foreach (var pair in dataProfile._memberData)
-                    pair.Key.SetValue(item, pair.Value.GetValue(item));
+                    pair.Key.SetValue(item, pair.Value.GetValue(item, dataProfile.DataConfiguration));
                 yield return item;
             }
         }

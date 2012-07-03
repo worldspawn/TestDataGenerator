@@ -13,7 +13,7 @@ namespace TestData.Profiles
 
         public IValueCreator ValueFromConstant(TProperty constant)
         {
-            throw new NotImplementedException();
+            return new ConstantValueCreator<TProperty>(constant);
         }
 
         public IValueCreator ValueFromRandom(int start, int end)

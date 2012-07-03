@@ -23,5 +23,6 @@ namespace TestData.Profiles
         IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path, int from, int to) where TProperty : System.Collections.IEnumerable;
         IDataProfile<TType> ForMember<TProperty>(Expression<Func<TType, TProperty>> member, Func<IValueCreatorFactory<TType, TProperty>, IValueCreator> valueCreator);
         IDataProfile<TType> ForMember<TProperty>(Expression<Func<TType, TProperty>> member, IValueCreator valueCreator);
+        IDataProfile<TType> CloneInto(DataConfiguration dataConfiguration);
     }
 }

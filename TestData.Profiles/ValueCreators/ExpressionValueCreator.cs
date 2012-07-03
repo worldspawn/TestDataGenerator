@@ -11,7 +11,7 @@ namespace TestData.Profiles.ValueCreators
             _expression = expression;
         }
 
-        public object CreateValue(object instance)
+        public object CreateValue(object instance, DataConfiguration dataConfiguration)
         {
             if (instance == null)
                 return default(TProperty);

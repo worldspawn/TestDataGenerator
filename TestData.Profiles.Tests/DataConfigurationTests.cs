@@ -54,9 +54,17 @@ namespace TestData.Profiles.Tests
         }
 
         [Fact]
-        public void CanCreateArrayOfRolesAndUseForMember()
+        public void CanCloneAndFiddle()
         {
-            
+            var dc = new DataConfiguration();
+            var userProfile = _dataConfiguration.Get<User>();
+            userProfile = userProfile.CloneInto(dc);
+            userProfile
+                .ForMember(x => x.FirstName, f => f.ValueFromConstant("Jimmy"))
+                .ForMember(x => x.Role, f => f.ValueFromConstant(null));
+
+            var users = dc.Get<User>().Generate(1);
+            Assert.Equal(1, users.Count());
         }
     }
 }
