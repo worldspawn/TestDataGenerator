@@ -2,3 +2,18 @@ code is a bit messy atm, needs cleaning up in the area of generating. dependenci
 want to support cloning of data profiles so you can pre configure a known set of them and reuse them, or clone and mod them for a particular tests
 
 examples are in the tests
+
+
+            _dataConfiguration = new DataConfiguration();
+            _dataConfiguration.CreateProfileFor<Role>(() => new Role())
+                .ForMember(x => x.Id, f => f.ValueFromExpression((u) => Guid.NewGuid()))
+                .ForMember(x => x.Name, f => f.ValueFromRandomString(4, 8));
+
+            _dataConfiguration.CreateProfileFor<User>(() => new User())
+                .FollowPath(x => x.Role)
+                .ForMember(x => x.Id, f => f.ValueFromExpression((u) => Guid.NewGuid()))
+                .ForMember(x => x.FirstName, f => f.ValueFromRandomString(4, 8))
+                .ForMember(x => x.Surname, f => f.ValueFromCollection(_names))
+                .ForMember(x => x.LogonCount, f => f.ValueFromRandom(0, 5));
+
+            var users = _dataConfiguration.Get<User>().Generate(50000);
