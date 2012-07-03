@@ -88,7 +88,8 @@ namespace TestData.Profiles
 
         public IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path)
         {
-            CreateMemberData<TType, TProperty>(path, new PathValueCreator(GetFromExpression(path), _dataConfiguration), this);
+            var memberData = CreateMemberData<TType, TProperty>(path, new PathValueCreator(GetFromExpression(path), _dataConfiguration), this);
+            _memberData.Add(memberData.PropertyInfo, memberData);
             return this;
         }
 

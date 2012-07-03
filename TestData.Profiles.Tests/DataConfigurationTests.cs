@@ -42,11 +42,11 @@ namespace TestData.Profiles.Tests
         [Fact]
         public void CanCreateUsers()
         {
-            var users = _dataConfiguration.Get<User>().Generate(500);
+            var users = _dataConfiguration.Get<User>().Generate(5);
             
             Assert.NotNull(users);
             Assert.NotEmpty(users);
-            Assert.Equal(500, users.Count());
+            Assert.Equal(5, users.Count());
             var first = users.First();
             Assert.Contains(first.Surname, _names);
             Assert.NotEqual(Guid.Empty, users.First().Id);

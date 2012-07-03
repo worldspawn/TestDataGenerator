@@ -47,7 +47,6 @@ namespace TestData.Profiles
         public CompleteMemberData(PropertyInfo propertyInfo, IValueCreator valueCreator, DataProfile<TType> dataProfile)
             : base(propertyInfo, dataProfile)
         {
-            dataProfile.MemberData[propertyInfo] = this;
             _valueCreator = valueCreator;
         }
 
