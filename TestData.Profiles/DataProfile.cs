@@ -21,7 +21,7 @@ namespace TestData.Profiles
         public IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path)
         {
             var memberData = CreateMemberData<TType, TProperty>(path, new PathValueCreator(GetFromExpression(path), _dataConfiguration), this);
-            _memberData.Add(memberData.PropertyInfo, memberData);
+            _memberData[memberData.PropertyInfo] = memberData;
             return this;
         }
 
@@ -38,14 +38,14 @@ namespace TestData.Profiles
         public IDataProfile<TType> ForMember<TProperty>(Expression<Func<TType, TProperty>> member, Func<IValueCreatorFactory<TType, TProperty>, IValueCreator> valueCreator)
         {
             var memberData = CreateMemberData(member, valueCreator, this);
-            _memberData.Add(memberData.PropertyInfo, memberData);
+            _memberData[memberData.PropertyInfo] = memberData;
             return this;
         }
 
         public IDataProfile<TType> ForMember<TProperty>(Expression<Func<TType, TProperty>> member, IValueCreator valueCreator)
         {
             var memberData = CreateMemberData(member, valueCreator, this);
-            _memberData.Add(memberData.PropertyInfo, memberData);
+            _memberData[memberData.PropertyInfo] = memberData;
             return this;
         }
 
