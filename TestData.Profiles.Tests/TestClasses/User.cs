@@ -11,6 +11,12 @@ namespace TestData.Profiles.Tests.TestClasses
         public string FirstName { get; set; }
         public string Surname { get; set; }
         public int LogonCount { get; set; }
-        public Role Role { get; set; }        
+        public Role Role { get; set; }
+        public List<Foo> Friends { get; set; }
+    }
+
+    public class Foo : TestClass
+    {
+        
     }
 }

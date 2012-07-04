@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TestData.Profiles.Tests.TestClasses;
 using Xunit;
 
@@ -10,9 +8,12 @@ namespace TestData.Profiles.Tests
 {
     public class DataConfigurationTests
     {
-        private readonly string[] _names = new string[] {
-            "Smith", "Jones", "Williams", "Brown", "Wilson", "Taylor"
-        };
+        private readonly DataConfiguration _dataConfiguration;
+
+        private readonly string[] _names = new[]
+                                               {
+                                                   "Smith", "Jones", "Williams", "Brown", "Wilson", "Taylor"
+                                               };
 
         public DataConfigurationTests()
         {
@@ -29,25 +30,23 @@ namespace TestData.Profiles.Tests
                 .ForMember(x => x.LogonCount, f => f.ValueFromRandom(0, 5));
         }
 
-        private readonly DataConfiguration _dataConfiguration;
-
         [Fact]
         public void CanCreate50000Users()
         {
-            var users = _dataConfiguration.Get<User>().Generate(50000);
-            
+            IEnumerable<User> users = _dataConfiguration.Get<User>().Generate(50000);
+
             users.Count();
         }
 
         [Fact]
         public void CanCreateUsers()
         {
-            var users = _dataConfiguration.Get<User>().Generate(5);
-            
+            IEnumerable<User> users = _dataConfiguration.Get<User>().Generate(5);
+
             Assert.NotNull(users);
             Assert.NotEmpty(users);
             Assert.Equal(5, users.Count());
-            var first = users.First();
+            User first = users.First();
             Assert.Contains(first.Surname, _names);
             Assert.NotEqual(Guid.Empty, users.First().Id);
             Assert.NotNull(first.Role);
@@ -57,14 +56,19 @@ namespace TestData.Profiles.Tests
         public void CanCloneAndFiddle()
         {
             var dc = new DataConfiguration();
-            var userProfile = _dataConfiguration.Get<User>();
+            dc.CreateProfileFor(() => new Foo())
+                .ForMember(x => x.Id, f => f.ValueFromExpression((u) => Guid.NewGuid()));
+
+            IDataProfile<User> userProfile = _dataConfiguration.Get<User>();
             userProfile = userProfile.CloneInto(dc);
             userProfile
                 .ForMember(x => x.FirstName, f => f.ValueFromConstant("Jimmy"))
-                .ForMember(x => x.Role, f => f.ValueFromConstant(null));
+                .ForMember(x => x.Role, f => f.ValueFromConstant(null))
+                .FollowPath(x => x.Friends, 2);
 
-            var users = dc.Get<User>().Generate(1);
-            Assert.Equal(1, users.Count());
+            var user = dc.Get<User>().Generate();
+            Assert.NotNull(user);
+            Assert.Equal(2, user.Friends.Count);
         }
     }
 }
