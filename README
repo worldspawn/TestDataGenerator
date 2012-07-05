@@ -1,5 +1,5 @@
-code is a bit messy atm, needs cleaning up in the area of generating. dependencies are all over the place
-want to support cloning of data profiles so you can pre configure a known set of them and reuse them, or clone and mod them for a particular tests
+Have cleaned up generating and dependencies
+Now supporting profile cloning. However you could still break it with silly use of expressions.
 
 examples are in the tests
 
