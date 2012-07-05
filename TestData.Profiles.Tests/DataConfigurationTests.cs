@@ -21,12 +21,12 @@ namespace TestData.Profiles.Tests
         {
             _dataConfiguration = new DataConfiguration();
             _dataConfiguration.CreateProfileFor(() => new Role())
-                .ForMember(x => x.Id, new ExpressionValueCreator<Role, Guid>((u) => Guid.NewGuid()))
+                .ForMember(x => x.Id, (r) => Guid.NewGuid())
                 .ForMember(x => x.Name, new RandomStringValueCreator(4, 8));
 
             _dataConfiguration.CreateProfileFor(() => new User())
                 .FollowPath(x => x.Role)
-                .ForMember(x => x.Id, new ExpressionValueCreator<User, Guid>((u) => Guid.NewGuid()))
+                .ForMember(x => x.Id, (u) => Guid.NewGuid())
                 .ForMember(x => x.FirstName, new RandomStringValueCreator(4, 8))
                 .ForMember(x => x.Surname, new CollectionItemValueCreator<string>(_names))
                 .ForMember(x => x.LogonCount, new IntRandomValueCreator(0, 5));
@@ -59,13 +59,13 @@ namespace TestData.Profiles.Tests
         {
             var dc = new DataConfiguration();
             dc.CreateProfileFor(() => new Foo())
-                .ForMember(x => x.Id, new ExpressionValueCreator<Foo, Guid>((u) => Guid.NewGuid()));
+                .ForMember(x => x.Id, (f) => Guid.NewGuid());
 
             IDataProfile<User> userProfile = _dataConfiguration.Get<User>();
             userProfile = userProfile.CloneInto(dc);
             userProfile
                 .ForMember(x => x.FirstName, "Jimmy")
-                .ForMember(x => x.Role, new ConstantValueCreator<Role>(null))
+                .ForMember(x => x.Role)
                 .FollowPath(x => x.Friends, 2);
 
             var user = dc.Get<User>().Generate(dc);

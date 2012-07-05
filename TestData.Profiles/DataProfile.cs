@@ -51,9 +51,19 @@ namespace TestData.Profiles
             return this;
         }
 
+        public IDataProfile<TType> ForMember<TProperty>(Expression<Func<TType, TProperty>> member)
+        {
+            return ForMember(member, new ConstantValueCreator<TProperty>(default(TProperty)));
+        }
+
         public IDataProfile<TType> ForMember<TProperty>(Expression<Func<TType, TProperty>> member, TProperty value)
         {
             return ForMember(member, new ConstantValueCreator<TProperty>(value));
+        }
+
+        public IDataProfile<TType> ForMember<TProperty>(Expression<Func<TType, TProperty>> member, Func<TType, TProperty> expression)
+        {
+            return ForMember(member, new ExpressionValueCreator<TType, TProperty>(expression));
         }
 
         public new IEnumerable<TType> Generate(IProfileResolver profileResolver, int count)
