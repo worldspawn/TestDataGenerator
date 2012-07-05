@@ -64,7 +64,7 @@ namespace TestData.Profiles.Tests
             IDataProfile<User> userProfile = _dataConfiguration.Get<User>();
             userProfile = userProfile.CloneInto(dc);
             userProfile
-                .ForMember(x => x.FirstName, new ConstantValueCreator<string>("Jimmy"))
+                .ForMember(x => x.FirstName, "Jimmy")
                 .ForMember(x => x.Role, new ConstantValueCreator<Role>(null))
                 .FollowPath(x => x.Friends, 2);
 

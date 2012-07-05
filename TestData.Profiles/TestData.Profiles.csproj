@@ -39,7 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Helpers\DataProfileExtensionMethods.cs" />
+    <Compile Include="Helpers\ValueCreatorExtensionMethods.cs" />
     <Compile Include="Helpers\ExpressionHelpers.cs" />
     <Compile Include="ValueCreators\CollectionItemValueCreator.cs" />
     <Compile Include="DataConfiguration.cs" />

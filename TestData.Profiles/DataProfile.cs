@@ -51,6 +51,11 @@ namespace TestData.Profiles
             return this;
         }
 
+        public IDataProfile<TType> ForMember<TProperty>(Expression<Func<TType, TProperty>> member, TProperty value)
+        {
+            return ForMember(member, new ConstantValueCreator<TProperty>(value));
+        }
+
         public new IEnumerable<TType> Generate(IProfileResolver profileResolver, int count)
         {
             return base.Generate(profileResolver, count).OfType<TType>();
@@ -100,11 +105,6 @@ namespace TestData.Profiles
         }
 
         #region IDataProfile Members
-
-        public Type Type
-        {
-            get { return _type; }
-        }
 
         public Func<object> Constructor
         {
