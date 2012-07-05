@@ -10,6 +10,6 @@ namespace TestData.Profiles.ValueCreators
 
         protected TProperty _start, _end;
 
-        public abstract object CreateValue(object instance, DataConfiguration dataConfiguration);
+        public abstract object CreateValue(object instance, IProfileResolver profileResolver);
     }
 }

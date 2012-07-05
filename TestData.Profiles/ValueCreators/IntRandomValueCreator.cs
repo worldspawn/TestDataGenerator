@@ -9,7 +9,7 @@ namespace TestData.Profiles.ValueCreators
         [ThreadStatic]
         private static Random _rand = new Random();
 
-        public override object CreateValue(object instance, DataConfiguration dataConfiguration)
+        public override object CreateValue(object instance, IProfileResolver profileResolver)
         {
             return _rand.Next(_start, _end);
         }

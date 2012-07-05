@@ -39,21 +39,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ValueCreatorFactory.cs" />
+    <Compile Include="Helpers\DataProfileExtensionMethods.cs" />
+    <Compile Include="Helpers\ExpressionHelpers.cs" />
     <Compile Include="ValueCreators\CollectionItemValueCreator.cs" />
-    <Compile Include="CompleteMemberData.cs" />
     <Compile Include="DataConfiguration.cs" />
     <Compile Include="DataProfile.cs" />
     <Compile Include="ValueCreators\ConstantValueCreator.cs" />
     <Compile Include="ValueCreators\DecimalRandomValueCreator.cs" />
     <Compile Include="ValueCreators\ExpressionValueCreator.cs" />
-    <Compile Include="ICompleteMemberData.cs" />
     <Compile Include="IDataProfile.cs" />
     <Compile Include="IMemberData.cs" />
     <Compile Include="ValueCreators\IntRandomValueCreator.cs" />
     <Compile Include="IValueCreator.cs" />
     <Compile Include="IValueCreatorFactory.cs" />
     <Compile Include="MemberData.cs" />
+    <Compile Include="ValueCreators\IProfileResolver.cs" />
+    <Compile Include="ValueCreators\ProfileResolver.cs" />
     <Compile Include="ValueCreators\RandomStringValueCreator.cs" />
     <Compile Include="ValueCreators\RandomValueCreator.cs" />
     <Compile Include="ValueCreators\PathValueCreator.cs" />

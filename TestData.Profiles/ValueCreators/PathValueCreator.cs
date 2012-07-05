@@ -17,10 +17,10 @@ namespace TestData.Profiles.ValueCreators
             PropertyType = propertyType;
         }
 
-        public virtual object CreateValue(object instance, DataConfiguration dataConfiguration)
+        public virtual object CreateValue(object instance, IProfileResolver profileResolver)
         {
-            var dataProfile = dataConfiguration.Get(PropertyType);
-            var reference = dataProfile.Generate();
+            var dataProfile = profileResolver.Get(PropertyType);
+            var reference = dataProfile.Generate(profileResolver);
             return reference;
         }
     }
@@ -32,13 +32,15 @@ namespace TestData.Profiles.ValueCreators
         private readonly int _to;
         [ThreadStatic] private static Random _rand;
 
-        private static Random Random { get
-        {
-            if (_rand == null)
-                _rand = new Random();
+        private static Random Random { 
+            get
+            {
+                if (_rand == null)
+                    _rand = new Random();
 
-            return _rand;
-        }}
+                return _rand;
+            }   
+        }
 
         public EnumerablePathValueCreator(PropertyInfo propertyInfo, int from, int to)
             : base(propertyInfo.PropertyType.GetGenericArguments()[0])
@@ -48,16 +50,15 @@ namespace TestData.Profiles.ValueCreators
             _to = to;
         }
 
-        public override object CreateValue(object instance, DataConfiguration dataConfiguration)
+        public override object CreateValue(object instance, IProfileResolver profileResolver)
         {
-            //var typeArgs = PropertyInfo.PropertyType.GetGenericArguments();
             var list = Activator.CreateInstance(_propertyInfo.PropertyType) as IList;
             var amount = _to;
             if (_from != _to)
                 amount = Random.Next(_from, _to);
 
             for (var i = 0; i < amount; i++)
-                list.Add(base.CreateValue(instance, dataConfiguration));
+                list.Add(base.CreateValue(instance, profileResolver));
 
             return list;
         }

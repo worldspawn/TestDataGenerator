@@ -15,7 +15,7 @@ namespace TestData.Profiles.ValueCreators
         private static Random _rand = new Random();
         private readonly TProperty[] _collection;
 
-        public object CreateValue(object instance, DataConfiguration dataConfiguration)
+        public object CreateValue(object instance, IProfileResolver profileResolver)
         {
             if (_collection.Length == 0)
                 throw new InvalidOperationException("collection is empty");

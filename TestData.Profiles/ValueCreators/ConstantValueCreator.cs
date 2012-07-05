@@ -9,7 +9,7 @@ namespace TestData.Profiles.ValueCreators
             _value = value;
         }
 
-        public object CreateValue(object instance, DataConfiguration dataConfiguration)
+        public object CreateValue(object instance, IProfileResolver profileResolver)
         {
             return _value;
         }

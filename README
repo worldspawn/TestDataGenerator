@@ -17,3 +17,5 @@ examples are in the tests
                 .ForMember(x => x.LogonCount, f => f.ValueFromRandom(0, 5));
 
             var users = _dataConfiguration.Get<User>().Generate(50000);
+
+Note self referencing follow paths will cause a stackoverflow.
