@@ -4,7 +4,6 @@ using System.Linq;
 using TestData.Profiles.Tests.TestClasses;
 using TestData.Profiles.ValueCreators;
 using Xunit;
-using TestData.Profiles.Helpers;
 
 namespace TestData.Profiles.Tests
 {
@@ -35,15 +34,15 @@ namespace TestData.Profiles.Tests
         [Fact]
         public void CanCreate50000Users()
         {
-            var users = _dataConfiguration.Get<User>().Generate(_dataConfiguration, 50000);
-            var count = users.Count();
+            IEnumerable<User> users = _dataConfiguration.Get<User>().Generate(_dataConfiguration, 50000);
+            int count = users.Count();
             Assert.Equal(50000, count);
         }
 
         [Fact]
         public void CanCreateUsers()
         {
-            var users = _dataConfiguration.Get<User>().Generate(_dataConfiguration, 5);
+            IEnumerable<User> users = _dataConfiguration.Get<User>().Generate(_dataConfiguration, 5);
 
             Assert.NotNull(users);
             Assert.NotEmpty(users);
@@ -68,7 +67,7 @@ namespace TestData.Profiles.Tests
                 .ForMember(x => x.Role)
                 .FollowPath(x => x.Friends, 2);
 
-            var user = dc.Get<User>().Generate(dc);
+            User user = dc.Get<User>().Generate(dc);
             Assert.NotNull(user);
             Assert.Equal(2, user.Friends.Count);
         }
