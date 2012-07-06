@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="DataConfigurationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestClasses\Order.cs" />
     <Compile Include="TestClasses\Role.cs" />
     <Compile Include="TestClasses\TestClass.cs" />
     <Compile Include="TestClasses\User.cs" />

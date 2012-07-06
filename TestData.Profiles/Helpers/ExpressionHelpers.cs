@@ -12,13 +12,13 @@ namespace TestData.Profiles.Helpers
             var memberExpression = expression.Body as MemberExpression;
             if (memberExpression == null)
             {
-                var ubody = (UnaryExpression) expression.Body;
-                memberExpression = ubody.Operand as MemberExpression;
+                var ubody = expression.Body as UnaryExpression;
+                if (ubody != null)
+                    memberExpression = ubody.Operand as MemberExpression;
             }
 
             if (memberExpression == null || (memberExpression.Member as PropertyInfo) == null)
-                throw new ArgumentException(string.Format(
-                    "The expression {0} is not a member expression for a property", expression));
+                throw new ArgumentException(string.Format("The expression {0} is not a member expression for a property", expression));
 
             return (PropertyInfo) memberExpression.Member;
         }

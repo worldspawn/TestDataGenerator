@@ -8,19 +8,22 @@ namespace TestData.Profiles.ValueCreators
     public class PathValueCreator : IValueCreator
     {
         protected readonly Type PropertyType;
-        
-        public PathValueCreator(PropertyInfo propertyInfo) : this(propertyInfo.PropertyType)
+        private readonly Func<object, object> _constructor;
+
+        public PathValueCreator(PropertyInfo propertyInfo, Func<object, object> constructor)
+            : this(propertyInfo.PropertyType, constructor)
         {}
 
-        protected PathValueCreator(Type propertyType)
+        protected PathValueCreator(Type propertyType, Func<object, object> constructor)
         {
             PropertyType = propertyType;
+            _constructor = constructor;
         }
 
         public virtual object CreateValue(object instance, IProfileResolver profileResolver)
         {
             var dataProfile = profileResolver.Get(PropertyType);
-            var reference = dataProfile.Generate(profileResolver);
+            var reference = dataProfile.Generate(profileResolver, instance, _constructor);
             return reference;
         }
     }
@@ -42,8 +45,8 @@ namespace TestData.Profiles.ValueCreators
             }   
         }
 
-        public EnumerablePathValueCreator(PropertyInfo propertyInfo, int from, int to)
-            : base(propertyInfo.PropertyType.GetGenericArguments()[0])
+        public EnumerablePathValueCreator(PropertyInfo propertyInfo, int from, int to, Func<object, object> constructor)
+            : base(propertyInfo.PropertyType.GetGenericArguments()[0], constructor)
         {
             _propertyInfo = propertyInfo;
             _from = @from;

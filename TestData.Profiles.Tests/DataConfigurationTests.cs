@@ -11,32 +11,52 @@ namespace TestData.Profiles.Tests
     {
         private readonly DataConfiguration _dataConfiguration;
 
-        private readonly string[] _names = new[]
-                                               {
-                                                   "Smith", "Jones", "Williams", "Brown", "Wilson", "Taylor"
-                                               };
+        private readonly string[] _names = new[] {
+            "Smith", "Jones", "Williams", "Brown", "Wilson", "Taylor"
+        },
+        _roleNames = new[]{
+            "Administrator", "Manager", "Clerk"
+        },
+        _productNames = new[] { "Apples", "Oranges", "Pears" };
+
+        
 
         public DataConfigurationTests()
         {
-            _dataConfiguration = new DataConfiguration();
-            _dataConfiguration.CreateProfileFor(() => new Role())
+            var roles = new DataProfile<Role>(() => new Role())
                 .ForMember(x => x.Id, (r) => Guid.NewGuid())
-                .ForMember(x => x.Name, new RandomStringValueCreator(4, 8));
+                .GenerateForEach(_dataConfiguration, _roleNames, (name, role) => role.Name = name).ToList();
+
+            var products = new DataProfile<Product>(() => new Product())
+                .ForMember(x => x.Id, (r) => Guid.NewGuid())
+                .ForMember(x=>x.Amount, new DecimalRandomValueCreator(5, 500))
+                .GenerateForEach(_dataConfiguration, _productNames, (name, product) => product.Name = name).ToList();
+
+            _dataConfiguration = new DataConfiguration();
+            _dataConfiguration.CreateProfileFor(() => new OrderItem())
+                .ForMember(x => x.Product, new CollectionItemValueCreator<Product>(products))
+                .ForMember(x => x.Quantity, new IntRandomValueCreator(1, 10));
+
+            _dataConfiguration.CreateProfileFor(() => new Order())
+                .ForMember(x => x.CreatedOn, (x) => DateTime.UtcNow)
+                .FollowPath(x => x.Items, 1, (o) => new OrderItem(o));
 
             _dataConfiguration.CreateProfileFor(() => new User())
                 .FollowPath(x => x.Role)
                 .ForMember(x => x.Id, (u) => Guid.NewGuid())
                 .ForMember(x => x.FirstName, new RandomStringValueCreator(4, 8))
                 .ForMember(x => x.Surname, new CollectionItemValueCreator<string>(_names))
-                .ForMember(x => x.LogonCount, new IntRandomValueCreator(0, 5));
+                .ForMember(x => x.Role, new CollectionItemValueCreator<Role>(roles))
+                .ForMember(x => x.LogonCount, new IntRandomValueCreator(1, 200))
+                .FollowPath(x => x.Orders, 3, 200, (u) => new Order(u));
         }
 
         [Fact]
-        public void CanCreate50000Users()
+        public void CanCreate1000Users()
         {
-            IEnumerable<User> users = _dataConfiguration.Get<User>().Generate(_dataConfiguration, 50000);
+            IEnumerable<User> users = _dataConfiguration.Get<User>().Generate(_dataConfiguration, 1000);
             int count = users.Count();
-            Assert.Equal(50000, count);
+            Assert.Equal(1000, count);
         }
 
         [Fact]
@@ -57,19 +77,70 @@ namespace TestData.Profiles.Tests
         public void CanCloneAndFiddle()
         {
             var dc = new DataConfiguration();
-            dc.CreateProfileFor(() => new Foo())
-                .ForMember(x => x.Id, (f) => Guid.NewGuid());
-
+            
             IDataProfile<User> userProfile = _dataConfiguration.Get<User>();
             userProfile = userProfile.CloneInto(dc);
             userProfile
                 .ForMember(x => x.FirstName, "Jimmy")
                 .ForMember(x => x.Role)
-                .FollowPath(x => x.Friends, 2);
+                .ForMember(x => x.Orders);
 
             User user = dc.Get<User>().Generate(dc);
             Assert.NotNull(user);
-            Assert.Equal(2, user.Friends.Count);
+            Assert.Null(user.Orders);
+        }
+
+        [Fact]
+        public void UsingEmptyCollectionValueCreatorFails()
+        {
+            var dc = new DataConfiguration();
+            IDataProfile<User> userProfile = _dataConfiguration.Get<User>();
+            userProfile = userProfile.CloneInto(dc);
+            userProfile
+                .ForMember(x => x.Surname, new CollectionItemValueCreator<string>(new string[0]))
+                .ForMember(x => x.Role);
+
+            Assert.Throws<InvalidOperationException>(() => dc.Get<User>().Generate(dc));
+        }
+
+        [Fact]
+        public void CanFollowEnumerablePathWithRandomReferenceCount()
+        {
+            User user = _dataConfiguration.Get<User>().Generate(_dataConfiguration);
+            Assert.NotNull(user);
+            Assert.True(user.Orders.Count() <= 200);
+            Assert.True(user.Orders.Count() >= 3);
+        }
+
+        [Fact]
+        public void InvalidExpressionTypesFail()
+        {
+            IDataProfile<User> userProfile = _dataConfiguration.Get<User>();
+            Assert.Throws<ArgumentException>(() => userProfile.ForMember(u => u.LogonCount.GetType(), GetType()));
+            Assert.Throws<ArgumentException>(() => userProfile.ForMember(u => u.LogonCount == 4, true));
+        }
+
+        [Fact]
+        public void UnaryExpressionsSupported()
+        {
+            IDataProfile<User> userProfile = _dataConfiguration.Get<User>();
+            userProfile.ForMember(u => (object)u.LogonCount, 2);
+        }
+
+        [Fact]
+        public void GenerateOneForEach()
+        {
+            var dc = new DataConfiguration();
+            var products = dc.CreateProfileFor(() => new Product())
+                .GenerateForEach(dc, _productNames, (name, product) =>
+                                                       {
+                                                           product.Name = name;
+                                                       }).ToList();
+
+            Assert.Equal(3, products.Count);
+            foreach(var name in _productNames)
+                Assert.Contains(name, products.Select(p=>p.Name));
+
         }
     }
 }

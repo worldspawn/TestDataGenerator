@@ -19,25 +19,32 @@ namespace TestData.Profiles
 
         #region IDataProfile<TType> Members
 
-        public IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path)
+        public IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path, Func<TType, object> constructor = null)
         {
-            var memberData = new PathValueCreator(ExpressionHelpers.GetFromExpression(path)).CreateMemberData(path);
+            Func<object, object> constructorCaller = null;
+            if (constructor != null)
+                constructorCaller = (instance) => constructor((TType)instance);
+
+            var memberData = new PathValueCreator(ExpressionHelpers.GetFromExpression(path), constructorCaller).CreateMemberData(path);
             MemberData[memberData.PropertyInfo] = memberData;
             return this;
         }
 
-        public IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path, int exactly)
+        public IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path, int exactly, Func<TType, object> constructor = null)
             where TProperty : IEnumerable
         {
-            return FollowPath(path, exactly, exactly);
+            return FollowPath(path, exactly, exactly, constructor);
         }
 
-        public IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path, int from, int to)
+        public IDataProfile<TType> FollowPath<TProperty>(Expression<Func<TType, TProperty>> path, int from, int to, Func<TType, object> constructor = null)
             where TProperty : IEnumerable
         {
+            Func<object, object> constructorCaller = null;
+            if (constructor != null)
+                constructorCaller = (instance) => constructor((TType) instance);
 
             var memberData =
-                new EnumerablePathValueCreator(ExpressionHelpers.GetFromExpression(path), from, to)
+                new EnumerablePathValueCreator(ExpressionHelpers.GetFromExpression(path), from, to, constructorCaller)
                 .CreateMemberData(path);
             MemberData[memberData.PropertyInfo] = memberData;
             return this;
@@ -87,6 +94,16 @@ namespace TestData.Profiles
             return dataProfile;
         }
 
+        public IEnumerable<TType> GenerateForEach<TEnumeratedType>(IProfileResolver profileResolver, IEnumerable<TEnumeratedType> items, Action<TEnumeratedType, TType> action)
+        {
+            foreach(var item in items)
+            {
+                var generatedItem = Generate(profileResolver);
+                action(item, generatedItem);
+                yield return generatedItem;
+            }
+        }
+
         #endregion
 
         public IDataProfile<TType> ForMember(PropertyInfo propertyInfo, IValueCreator valueCreator)
@@ -119,6 +136,20 @@ namespace TestData.Profiles
         public Func<object> Constructor
         {
             get { return _constructor; }
+        }
+
+        public object Generate(IProfileResolver profileResolver, object referringInstance, Func<object, object> constructor = null)
+        {
+            object item;
+            if (constructor == null)
+                item = _constructor();
+            else
+                item = constructor(referringInstance);
+
+            foreach (var pair in _memberData)
+                pair.Key.SetValue(item, pair.Value.GetValue(item, profileResolver));
+
+            return item;
         }
 
         public object Generate(IProfileResolver profileResolver)
