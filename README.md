@@ -5,6 +5,8 @@ examples are in the tests
 
 Can now create big graphs and mix/match and modify them.
 
+Available on NuGet - https://nuget.org/packages/TestData.Profiles
+
 ``` csharp
     var roles = new DataProfile<Role>(() => new Role())
         .ForMember(x => x.Id, (r) => Guid.NewGuid())
