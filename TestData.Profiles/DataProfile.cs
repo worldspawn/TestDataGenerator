@@ -147,7 +147,7 @@ namespace TestData.Profiles
                 item = constructor(referringInstance);
 
             foreach (var pair in _memberData)
-                pair.Key.SetValue(item, pair.Value.GetValue(item, profileResolver));
+                pair.Key.SetValue(item, pair.Value.GetValue(item, profileResolver), null);
 
             return item;
         }
@@ -167,7 +167,7 @@ namespace TestData.Profiles
             {
                 object item = _constructor();
                 foreach (var pair in _memberData)
-                    pair.Key.SetValue(item, pair.Value.GetValue(item, profileResolver));
+                    pair.Key.SetValue(item, pair.Value.GetValue(item, profileResolver), null);
                 yield return item;
             }
         }
