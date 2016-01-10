@@ -1,3 +1,5 @@
+**I recommend using AutoFixture rather than this**
+
 Have cleaned up generating and dependencies
 Now supporting profile cloning. However you could still break it with silly use of expressions.
 
